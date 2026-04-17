@@ -63,6 +63,7 @@ document.head.appendChild(buggiesStyle);
   if (!wrapper || !images.length) return;
 
   let currentIndex = 0;
+  let autoPlayTimer = null;
 
   function activateSlide(index) {
     if (index === currentIndex) return;
@@ -89,6 +90,14 @@ document.head.appendChild(buggiesStyle);
     }, 500);
   }
 
+  // Auto-play: cycle slides every 3s; resets whenever scroll changes the slide
+  function startAutoPlay() {
+    clearInterval(autoPlayTimer);
+    autoPlayTimer = setInterval(() => {
+      activateSlide((currentIndex + 1) % TOTAL);
+    }, 3000);
+  }
+
   function onScroll() {
     const wrapperRect = wrapper.getBoundingClientRect();
     const wrapperTop  = -wrapperRect.top;
@@ -96,6 +105,9 @@ document.head.appendChild(buggiesStyle);
 
     const progress = Math.min(Math.max(wrapperTop / scrollRange, 0), 1);
     const index    = Math.min(Math.floor(progress * TOTAL), TOTAL - 1);
+
+    // If scroll drives a new slide, reset auto-play timer so it doesn't fire immediately after
+    if (index !== currentIndex) startAutoPlay();
 
     activateSlide(index);
   }
@@ -112,4 +124,5 @@ document.head.appendChild(buggiesStyle);
 
   window.addEventListener('scroll', onScroll, { passive: true });
   onScroll();
+  startAutoPlay();
 })();
